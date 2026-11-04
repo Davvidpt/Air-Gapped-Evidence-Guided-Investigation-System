@@ -1,0 +1,29 @@
+{
+  "ruleset_version": 1,
+  "rules": [
+    {
+      "id": "AEGIS-AUTORUN-001", "enabled": true,
+      "title": "Startup references temporary executable path",
+      "artifact": "Windows.Sys.StartupItems", "predicate": "autorun_temp_path",
+      "severity": "medium", "technique_id": "T1547.001", "tactic": "persistence"
+    },
+    {
+      "id": "AEGIS-SERVICE-001", "enabled": true,
+      "title": "Service binary references temporary directory",
+      "artifact": "Windows.System.Services", "predicate": "service_temp_path",
+      "severity": "medium", "technique_id": "T1543.003", "tactic": "persistence"
+    },
+    {
+      "id": "AEGIS-PROCESS-001", "enabled": true,
+      "title": "Running executable from temporary directory",
+      "artifact": "Windows.System.Pslist", "predicate": "process_temp_path",
+      "severity": "low", "technique_id": null, "tactic": null
+    },
+    {
+      "id": "AEGIS-POWERSHELL-001", "enabled": true,
+      "title": "PowerShell with encoded command argument",
+      "artifact": "Windows.System.Pslist", "predicate": "powershell_encoded_command",
+      "severity": "medium", "technique_id": "T1059.001", "tactic": "execution"
+    }
+  ]
+}

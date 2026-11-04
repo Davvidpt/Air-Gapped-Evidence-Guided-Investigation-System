@@ -1,0 +1,24 @@
+# Never commit actual endpoint collections or local model weights
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.env
+.env.*
+!.env.example
+*.db
+*.sqlite
+*.sqlite3
+*.zip
+*.7z
+*.exe
+*.evtx
+*.pf
+*.dmp
+*.log
+**/data/incoming/**
+**/data/archive/**
+**/data/processed/**
+!**/.gitkeep
+reports/generated/
+models/

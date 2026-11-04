@@ -1,0 +1,12 @@
+# Documentation example ONLY. This is not loaded by an implemented engine.
+rules:
+  - id: AEGIS-AUTORUN-001
+    version: 1
+    name: Autorun target in a temporary user path
+    source_artifacts: [Windows.Sys.StartupItems]
+    predicate: autorun_temp_directory  # named Python predicate to implement/test
+    severity: medium
+    mitre:
+      - technique_id: T1547.001
+        tactic: persistence
+    message: Investigate file hash, signer, expected use, and corroborating evidence.
