@@ -4,7 +4,10 @@ This does not run or distribute any executables or commands.
 """
 import argparse
 from pathlib import Path
-from create_demo_collection import create_zip
+if __package__:
+    from .create_demo_collection import create_zip
+else:
+    from create_demo_collection import create_zip
 
 FAKE_RESULTS = {
     'Windows.Sys.StartupItems': [

@@ -22,3 +22,12 @@ __pycache__/
 !**/.gitkeep
 reports/generated/
 models/
+
+reports/*.pdf
+*.egg-info/
+
+# Local progress documentation, release patch archives, and endpoint collections
+AEGIS_Dokumentasi_*
+AEGIS_*_Patch*
+[Cc]ollection-*/
+[Cc]ollection-*

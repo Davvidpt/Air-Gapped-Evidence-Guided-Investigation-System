@@ -4,10 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aegis-offline"
-version = "0.2.0"
+version = "0.4.1"
 description = "AEGIS: Air-Gapped Evidence & Guided Investigation System"
 requires-python = ">=3.10"
 dependencies = []
+
+[project.optional-dependencies]
+mvp = ["streamlit>=1.49,<2", "reportlab>=4,<5", "streamlit-antd-components==0.3.2"]
+verification = ["pypdfium2>=4,<6"]
 
 [project.scripts]
 aegis = "aegis.cli:main"

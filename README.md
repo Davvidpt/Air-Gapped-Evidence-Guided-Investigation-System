@@ -1,49 +1,69 @@
 # AEGIS — Air-Gapped Evidence & Guided Investigation System
 
-**Build:** v0.2.0 — M1 ZIP ingestion + M2 deterministic assessment and limited ATT&CK mapping. **Not yet implemented:** Streamlit dashboard, PDF report, local AI, and advanced correlation.
+**v0.4.1 — MVP laboratorium M1–M4:** ingestion ZIP, evidence SQLite, assessment deterministik, mapping ATT&CK terbatas, dashboard lokal, dan laporan PDF berbahasa Indonesia. AI lokal dan korelasi antar-endpoint masih direncanakan.
 
-AEGIS processes Velociraptor Offline Collector ZIPs **without needing Server.Utils.ImportCollection**. It is a defensive workflow for authorized Windows lab endpoints and produces reviewable *indicators*, not infection verdicts.
+AEGIS membantu triase Windows di lingkungan offline. Velociraptor mengumpulkan artifact; AEGIS mengolah ZIP langsung tanpa `Server.Utils.ImportCollection`. Temuan adalah indikator untuk ditinjau, bukan vonis infeksi. **Tidak ada rule match tidak membuktikan endpoint bersih.**
 
-## Components
+`USB collector → ZIP → validasi + normalisasi → SQLite → rules → findings + evidence IDs → dashboard / PDF`
 
-`USB Velociraptor collector → ZIP → bounded Python validation/JSONL ingestion → SQLite raw + normalized evidence → named detection predicates → related MITRE ATT&CK IDs → evidence-linked findings`
+## Instalasi
 
-A local AI assistant and dashboard are future milestones and **must not override** deterministic findings. No online calls are made by the current source code.
-
-## Requirements
-
-Debian 12+; Python 3.10+; standard library only; authorized lab ZIP not encrypted. The importer has deliberate archive size limits (350 MiB uncompressed, 64 MiB per result member, 2,000 entries).
-
-## Quickstart
+Python 3.10+ di Linux. Jalankan dari root proyek. Ingestion/assessment menggunakan standard library; dashboard dan PDF memerlukan dependency tambahan.
 
 ```bash
-cd ~/AEGIS_M1
-# Use an existing M1 database (back it up before deploying M2), or create synthetic data:
-python3 scripts/create_demo_collection.py data/incoming/demo-collection.zip
-PYTHONPATH=src python3 -m aegis ingest data/incoming/demo-collection.zip --db data/aegis-v1.db
-PYTHONPATH=src python3 -m aegis inspect-fields --db data/aegis-v1.db --collection 1
-PYTHONPATH=src python3 -m aegis assess --db data/aegis-v1.db --collection 1
-PYTHONPATH=src python3 -m aegis summary --db data/aegis-v1.db --collection 1
-PYTHONPATH=src python3 -m unittest discover -s tests -v
+python3 -m venv .venv
+.venv/bin/python -m pip install '.[mvp,verification]'
+PYTHONPATH=src .venv/bin/python -m unittest discover -s tests -v
 ```
 
-For a **previously imported real lab collection ID 2**, do not reimport:
+Dependency `verification` hanya untuk pemeriksaan PDF. Setup membutuhkan internet atau wheelhouse yang disiapkan sebelumnya; analisis berikutnya berjalan lokal. Lihat [panduan MVP](docs/14_MVP_RUNBOOK.md) untuk persiapan offline.
+
+## Jalankan dashboard
 
 ```bash
-PYTHONPATH=src python3 -m aegis inspect-fields --db data/aegis-v1.db --collection 2
-PYTHONPATH=src python3 -m aegis assess --db data/aegis-v1.db --collection 2
-PYTHONPATH=src python3 -m aegis summary --db data/aegis-v1.db --collection 2
+bash scripts/run_dashboard.sh
 ```
 
-**Always interpret `NO_RULE_MATCHES` as no rules matched this limited evidence; not as clean.** Artifact presence (4/4) also does not imply field completeness.
+Buka `http://127.0.0.1:8501`. Dari Windows host, gunakan SSH tunnel:
 
-## Documentation
+```powershell
+ssh -N -L 8501:127.0.0.1:8501 srv-admin@IP_LINUX_VM
+```
 
-- `docs/01_ARCHITECTURE.md` — architecture overview
-- `docs/02_DATA_CONTRACT.md` — M1 evidence schema
-- `docs/03_DETECTION_AND_MITRE.md` — detection philosophy
-- `docs/04_SECURITY_PRIVACY.md` — data handling cautions
-- `docs/11_M1_IMPLEMENTATION.md` — M1 baseline
-- **`docs/12_M2_IMPLEMENTATION.md` — M2 migration, rules, commands, limitations, acceptance tests**
+Dashboard dapat menerima impor pertama tanpa database sebelumnya. Navigasi menggunakan sidebar Ant Design: **Impor ZIP → pilih collection → Ringkasan: Jalankan assessment → Temuan / MITRE / Evidence → Laporan: Buat PDF → Unduh PDF**. Pilih collection dan assessment aktif pada sidebar; pengaturan path tersedia di Pengaturan station. Upload dibatasi 100 MiB. Dashboard tidak memiliki autentikasi; gunakan localhost dan SSH tunnel. Telemetri Streamlit dinonaktifkan melalui konfigurasi proyek.
 
-Source contains no malware, private endpoint ZIPs or model weights. Existing `.gitignore` excludes evidence files and databases.
+Tampilan menggunakan [Streamlit Ant Design Components](https://github.com/nicedouble/StreamlitAntdComponents) (MIT), tema terang navy/teal, filter temuan, dan halaman terpisah. Dependency komponen sudah termasuk extra `mvp`; aset komponennya dibundel lokal.
+
+## Demo sintetis lengkap
+
+```bash
+.venv/bin/python scripts/run_mvp_demo.py
+```
+
+Script membuat direktori baru di `reports/generated/` berisi dua ZIP sintetis, dua database terpisah, PDF berlabel sintetis, dan `results.json` dengan durasi serta pemeriksaan idempotensi. Baseline: **0 matches**. Fixture positif: **4 matches, 3 teknik MITRE**. Ini pengujian fungsi, bukan pengukuran akurasi malware.
+
+## CLI untuk evidence lab
+
+```bash
+PYTHONPATH=src .venv/bin/python -m aegis ingest PATH_COLLECTION.zip --db data/aegis-v1.db
+PYTHONPATH=src .venv/bin/python -m aegis inspect-fields --db data/aegis-v1.db --collection 2
+PYTHONPATH=src .venv/bin/python -m aegis assess --db data/aegis-v1.db --collection 2
+PYTHONPATH=src .venv/bin/python -m aegis report --db data/aegis-v1.db --collection 2 --out reports/AEGIS-collection-2.pdf
+```
+
+Gunakan ID dari hasil ingest. Collection yang sudah diimpor tidak perlu diimpor ulang. Report memakai assessment terbaru pada collection tersebut; `--assessment ID` memilih assessment tertentu. Ekspor membaca database tanpa migrasi atau analisis ulang. File keluaran yang sudah ada ditolak kecuali `--overwrite`; observed values tidak disertakan kecuali `--include-observed`. Tambahkan `--synthetic` untuk data demonstrasi.
+
+## Batas MVP dan dokumentasi
+
+Empat artifact Quick: Pslist, Netstat, Services, StartupItems. Empat rules heuristik dan tiga ID ATT&CK lokal; bukan dataset Enterprise penuh. Coverage 4/4 hanya keberadaan artifact, bukan kelengkapan field atau persentase keamanan. ZIP terenkripsi, AI, korelasi lintas-endpoint dan autentikasi belum tersedia. Simpan ZIP master terpisah; hash saat diterima tidak membuktikan keaslian historis.
+
+- [Catatan rilis](CHANGELOG.md)
+- [Panduan MVP dan validasi](docs/14_MVP_RUNBOOK.md)
+- [Arsitektur](docs/01_ARCHITECTURE.md)
+- [Kontrak data](docs/02_DATA_CONTRACT.md)
+- [Rules dan M2](docs/12_M2_IMPLEMENTATION.md)
+- [Dashboard](docs/13_M3_DASHBOARD.md)
+- [SOP operator](docs/06_OPERATOR_SOP.md)
+- [Batasan](docs/10_LIMITATIONS.md)
+
+Jangan commit evidence ZIP, SQLite, laporan sensitif, atau model weights. Dokumen handover 8 November merupakan catatan historis; status implementasi terbaru ada pada README dan runbook MVP.

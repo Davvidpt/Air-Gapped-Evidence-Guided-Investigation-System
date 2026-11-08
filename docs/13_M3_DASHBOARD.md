@@ -5,7 +5,7 @@
 - Import ZIP Velociraptor v0.77.3 **tanpa enkripsi** langsung ke SQLite, tanpa `ImportCollection`.
 - Memilih collection lama (termasuk ID 2), melihat 4 artifact/field coverage, menjalankan rules M2.
 - Melihat findings dengan tautan evidence ID, ringkasan mapping ATT&CK, dan detail evidence (atas pilihan operator).
-- **Belum** menyediakan report PDF, AI, MITRE Enterprise matrix lengkap, automatic benign/malicious classification, akun login, atau korelasi multi-endpoint.
+- M4 menambahkan halaman Laporan PDF; lihat `14_MVP_RUNBOOK.md`. **Belum** menyediakan AI, MITRE Enterprise matrix lengkap, automatic benign/malicious classification, akun login, atau korelasi multi-endpoint.
 
 ## Instalasi di Debian (satu kali ketika internet tersedia)
 
@@ -13,7 +13,7 @@
 cd ~/AEGIS_M1
 python3 -m venv .venv
 . .venv/bin/activate
-python -m pip install 'streamlit>=1.37,<2'
+python -m pip install '.[mvp]'
 ```
 
 Untuk penggunaan berikutnya, tidak perlu koneksi internet selama paket Python sudah terpasang. Streamlit digunakan lokal, jangan deploy ke jaringan terbuka tanpa autentikasi dan hardening.
@@ -44,7 +44,7 @@ PYTHONPATH=src python3 -m unittest discover -s tests -v
 PYTHONPATH=src python3 -m aegis summary --db data/aegis-v1.db --collection 2
 ```
 
-Dalam Overview, pilih collection #2, harus muncul 1.138 evidence rows, empat jenis artifact, dan setidaknya satu assessment jika M2 sudah pernah dijalankan. Temuan dari direktori temporary tetap berstatus indikator heuristik; nama program saja tidak cukup untuk pengecualian/simpulan.
+Dalam Ringkasan, pilih collection #2, harus muncul 1.138 evidence rows, empat jenis artifact, dan setidaknya satu assessment jika M2 sudah pernah dijalankan. Temuan dari direktori temporary tetap berstatus indikator heuristik; nama program saja tidak cukup untuk pengecualian/simpulan.
 
 ## Keamanan
 
@@ -61,3 +61,11 @@ Dalam Overview, pilih collection #2, harus muncul 1.138 evidence rows, empat jen
 - `Quick coverage 4/4` hanyalah keberadaan artifact, bukan kemampuan deteksi atau tingkat keamanan sistem.
 - MITRE mapping tidak muncul untuk `AEGIS-PROCESS-001` karena hanya anomali lokasi tanpa teknik spesifik.
 - Dua temuan dari proses yang berhubungan tetap tampil sebagai dua rule matches; deduplikasi berbasis korelasi membutuhkan proses pengembangan berikutnya.
+
+## Pembaruan MVP M4
+
+Dashboard mendukung database baru dari upload pertama dan halaman Laporan PDF dengan pilihan assessment pada sidebar. Gunakan `bash scripts/run_dashboard.sh` untuk binding localhost dan menonaktifkan telemetri. Pengujian interaksi ada di `tests/test_mvp_ui.py`.
+
+## Navigasi Ant Design
+
+Pembaruan tampilan memakai `streamlit-antd-components==0.3.2` (MIT). Sidebar berisi Ringkasan, Impor ZIP, Temuan, MITRE ATT&CK, Evidence dan Laporan. Collection serta assessment aktif berlaku di seluruh halaman. Path SQLite/rules berada pada expander Pengaturan station. Tema dan aset komponen dipasang lokal; siapkan dependency ini juga dalam wheelhouse offline. Lihat runbook untuk status pengujian browser.

@@ -1,1 +1,1 @@
-"""Planned AEGIS module; implementation pending."""
+"""Local reports from persisted, evidence-linked AEGIS assessments."""

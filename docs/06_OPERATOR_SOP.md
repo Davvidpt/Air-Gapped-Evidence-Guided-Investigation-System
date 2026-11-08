@@ -21,9 +21,9 @@ Collect and triage a Windows lab endpoint offline without needing to understand 
 ## At AEGIS station
 
 1. Copy ZIP and associated log to a protected import area.
-2. **M1 currently:** run `PYTHONPATH=src python3 -m aegis ingest <ZIP> --db data/aegis-v1.db` and inspect the summary. This is ingestion only, not security assessment.
-3. **Planned:** open AEGIS dashboard and select ZIP, then review supported findings with evidence citations.
-4. **Planned:** export PDF summary and record remaining investigation questions.
+2. Jalankan `bash scripts/run_dashboard.sh`, buka localhost:8501 melalui SSH tunnel, lalu Import ZIP. CLI `aegis ingest` tetap tersedia.
+3. Pilih collection, audit artifact/field pada Ringkasan, jalankan assessment, lalu tinjau Temuan, MITRE dan Evidence.
+4. Pada sidebar pilih assessment aktif, kemudian buka halaman Laporan dan ekspor PDF. Catat pertanyaan investigasi yang masih perlu dijawab.
 5. Preserve original ZIP for authorized review. Never upload it to a public repository.
 
 ## Interpretation

@@ -21,14 +21,13 @@
 
 `evidence_id = SHA256(zip_sha256 + NUL + source_member + NUL + row_index)` (defined once in code; JSON path is an untrusted string and never evaluated).
 
-### findings (planned, not implemented)
-`finding_id`, `collection_id`, `rule_id`, `rule_version`, `title`, `severity`, `status` (`observed|needs_review|suppressed`), `confidence_basis`, `explanation`, `created_at_utc`.
+### assessment_runs (implemented M2, schema v2)
+`id`, `collection_id` FK, `ruleset_sha256`, `engine_version`, `created_at_utc`, `findings_count`. Unique `(collection_id, ruleset_sha256)` supports assessment reuse.
 
-### finding_evidence (planned, not implemented)
-`finding_id` FK, `evidence_id` FK, `role` (`primary|corroborating|contradicting`).
+### findings (implemented M2)
+`id`, `assessment_id` FK, `evidence_id` FK, `rule_id`, `title`, `severity`, `reason`, `observed_value`, `technique_id` nullable, `tactic` nullable. Unique `(assessment_id, rule_id, evidence_id)`. Each finding currently references one evidence row. Many-to-many evidence links and a separate technique mapping table remain future designs.
 
-### technique_mappings (planned, not implemented)
-`finding_id`, `technique_id`, `tactic`, `mapping_source` (`rule`), `attack_release_id`.
+M3 dashboard and M4 reporting read this schema; no new tables are required. M4 reports select a persisted assessment, check collection ownership and include source member/row references.
 
 ### ai_notes (planned, not implemented)
 `finding_id` nullable, `model_id`, `prompt_version`, `generated_text`, `validated_evidence_ids_json`, `generation_status`.

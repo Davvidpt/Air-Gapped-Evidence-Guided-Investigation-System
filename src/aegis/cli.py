@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import sqlite3
 from pathlib import Path
 
 from aegis.detection.engine import assess
@@ -68,8 +69,22 @@ def main(argv=None) -> int:
     diag.add_argument('--db', default='data/aegis-v1.db', type=Path)
     diag.add_argument('--collection', type=int, help='Collection ID (default latest)')
     diag.add_argument('--json', action='store_true')
+    pdf = command.add_parser('report', help='Export persisted assessment to Indonesian PDF')
+    pdf.add_argument('--db', default='data/aegis-v1.db', type=Path)
+    pdf.add_argument('--collection', required=True, type=int)
+    pdf.add_argument('--assessment', type=int, help='Default: latest assessment for collection')
+    pdf.add_argument('--out', required=True, type=Path)
+    pdf.add_argument('--overwrite', action='store_true')
+    pdf.add_argument('--include-observed', action='store_true', help='Include sensitive observed values')
+    pdf.add_argument('--synthetic', action='store_true', help='Label report as synthetic demonstration')
     args = parser.parse_args(argv)
     try:
+        if args.command == 'report':
+            from aegis.reporting.pdf_report import export_pdf
+            output = export_pdf(args.db, args.collection, args.out, args.assessment,
+                                args.overwrite, args.include_observed, args.synthetic)
+            print(f'PDF dibuat: {output}')
+            return 0
         if args.command == 'ingest':
             data = ingest(args.collection_zip, args.db)
         elif args.command == 'assess':
@@ -101,6 +116,6 @@ def main(argv=None) -> int:
         else:
             print_summary(data)
         return 0
-    except (OSError, ValueError, CollectionError, RuntimeError) as exc:
+    except (OSError, ValueError, CollectionError, RuntimeError, sqlite3.Error) as exc:
         print(f'ERROR: {exc}', file=sys.stderr)
         return 1
